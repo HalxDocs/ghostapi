@@ -2,21 +2,16 @@ package main
 
 import (
 	"log"
-	"os"
+	"net/http"
 
-	"github.com/halxdocs/ghostapi/internal/engine"
+	"github.com/halxdocs/ghostapi/internal/api"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("Usage: go run cmd/server/main.go <url>")
-	}
+	handler := api.NewHandler()
 
-	url := os.Args[1]
+	http.HandleFunc("/scrape", handler.Scrape)
 
-	e := engine.NewEngine()
-
-	if err := e.Run(url); err != nil {
-		log.Fatal(err)
-	}
+	log.Println("Server running on http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
