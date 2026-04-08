@@ -1,55 +1,39 @@
-package parser
+package engine
 
 import (
-	"strings"
+	"encoding/json"
+	"fmt"
 
-	"github.com/PuerkitoBio/goquery"
+	"github.com/halxdocs/ghostapi/internal/parser"
+	"github.com/halxdocs/ghostapi/internal/scraper"
 )
 
-type ParsedData struct {
-	Title string   `json:"title"`
-	Text  []string `json:"text"`
-	Links []map[string]string `json:"links"`
+type Engine struct {
+	scraper *scraper.Scraper
+	parser  *parser.Parser
 }
 
-type Parser struct{}
-
-func NewParser() *Parser {
-	return &Parser{}
+func NewEngine() *Engine {
+	return &Engine{
+		scraper: scraper.NewScraper(),
+		parser:  parser.NewParser(),
+	}
 }
 
-func (p *Parser) ParseHTML(html string) (*ParsedData, error) {
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+func (e *Engine) Run(url string) error {
+	html, err := e.scraper.FetchHTML(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	data := &ParsedData{}
+	data, err := e.parser.ParseHTML(html)
+	if err != nil {
+		return err
+	}
 
-	// Title
-	data.Title = doc.Find("title").First().Text()
+	jsonOutput, _ := json.MarshalIndent(data, "", "  ")
 
-	// Extract ALL visible text (div, span, p)
-	doc.Find("body *").Each(func(i int, s *goquery.Selection) {
-		text := strings.TrimSpace(s.Text())
+	fmt.Println(string(jsonOutput))
 
-		if text != "" && len(text) > 30 {
-			data.Text = append(data.Text, text)
-		}
-	})
-
-	// Extract links
-	doc.Find("a").Each(func(i int, s *goquery.Selection) {
-		href, exists := s.Attr("href")
-		text := strings.TrimSpace(s.Text())
-
-		if exists && text != "" {
-			data.Links = append(data.Links, map[string]string{
-				"text": text,
-				"href": href,
-			})
-		}
-	})
-
-	return data, nil
+	return nil
 }

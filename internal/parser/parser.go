@@ -7,9 +7,9 @@ import (
 )
 
 type ParsedData struct {
-	Title      string            `json:"title"`
-	Paragraphs []string          `json:"paragraphs"`
-	Links      []map[string]string `json:"links"`
+	Title string   `json:"title"`
+	Text  []string `json:"text"`
+	Links []map[string]string `json:"links"`
 }
 
 type Parser struct{}
@@ -26,14 +26,15 @@ func (p *Parser) ParseHTML(html string) (*ParsedData, error) {
 
 	data := &ParsedData{}
 
-	// Extract title
+	// Title
 	data.Title = doc.Find("title").First().Text()
 
-	// Extract paragraphs
-	doc.Find("p").Each(func(i int, s *goquery.Selection) {
+	// Extract ALL visible text (div, span, p)
+	doc.Find("body *").Each(func(i int, s *goquery.Selection) {
 		text := strings.TrimSpace(s.Text())
-		if text != "" {
-			data.Paragraphs = append(data.Paragraphs, text)
+
+		if text != "" && len(text) > 30 {
+			data.Text = append(data.Text, text)
 		}
 	})
 
