@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GhostAPI</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 40px;
+      background: #0f172a;
+      color: white;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 300px;
+    }
+
+    pre {
+      background: #1e293b;
+      padding: 20px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>GhostAPI</h1>
+
+<input id="url" placeholder="Enter URL" />
+<br>
+<button onclick="scrape()">Scrape</button>
+
+<pre id="output"></pre>
+
+<script>
+async function scrape() {
+  const url = document.getElementById("url").value;
+
+  const res = await fetch("http://localhost:8080/scrape", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ url })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("output").textContent =
+    JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>
