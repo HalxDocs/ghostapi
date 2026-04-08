@@ -1,9 +1,6 @@
 package engine
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/halxdocs/ghostapi/internal/parser"
 	"github.com/halxdocs/ghostapi/internal/scraper"
 )
@@ -20,20 +17,11 @@ func NewEngine() *Engine {
 	}
 }
 
-func (e *Engine) Run(url string) error {
+func (e *Engine) Process(url string) (*parser.ParsedData, error) {
 	html, err := e.scraper.FetchHTML(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	data, err := e.parser.ParseHTML(html)
-	if err != nil {
-		return err
-	}
-
-	jsonOutput, _ := json.MarshalIndent(data, "", "  ")
-
-	fmt.Println(string(jsonOutput))
-
-	return nil
+	return e.parser.ParseHTML(html)
 }
